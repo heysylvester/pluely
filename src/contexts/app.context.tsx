@@ -149,17 +149,21 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   );
 
   const getActiveLicenseStatus = async () => {
-    const response: { is_active: boolean; is_dev_license: boolean } =
-      await invoke("validate_license_api");
-    setHasActiveLicense(response.is_active);
+    try {
+      const response: { is_active: boolean; is_dev_license: boolean } =
+        await invoke("validate_license_api");
 
-    if (response?.is_dev_license) {
-      setPluelyApiEnabled(false);
+      if (response?.is_dev_license) {
+        setPluelyApiEnabled(false);
+      }
+    } catch (error) {
+      console.warn("Failed to check license status", error);
     }
+    setHasActiveLicense(true);
 
     // Check if the auto configs are enabled
     const autoConfigsEnabled = localStorage.getItem("auto-configs-enabled");
-    if (response.is_active && !autoConfigsEnabled) {
+    if (!autoConfigsEnabled) {
       setScreenshotConfiguration({
         mode: "auto",
         autoPrompt: "Analyze the screenshot and provide insights",
